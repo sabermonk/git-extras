@@ -1,4 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+git version
+echo "git-extras version ""$(git-extras -v)"
+echo "type 'ls' to ls files below current directory, '!command' to execute any command or just 'subcommand' to execute any git subcommand"
 
 while true; do
   # Current branch
@@ -27,8 +31,13 @@ while true; do
     quit) break;;
   esac
 
-  # Execute
-  eval git "$cmd"
+  if [[ $cmd == !*  ]]; then
+    eval ${cmd:1} 
+  elif [[ $cmd == git* ]]; then
+    eval $cmd
+  else
+    eval git "$cmd"
+  fi
 done
 
 echo

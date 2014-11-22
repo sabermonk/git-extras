@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="1.7.0"
+VERSION="2.2.0"
 
 update() {
   local bin=$(which git-extras)
@@ -9,7 +9,7 @@ update() {
 
   cd /tmp \
     && rm -fr ./git-extras \
-    && git clone --depth 1 https://github.com/visionmedia/git-extras.git \
+    && git clone --depth 1 https://github.com/tj/git-extras.git \
     && cd git-extras \
     && PREFIX="$prefix" make install \
     && cd "$orig" \
@@ -24,7 +24,6 @@ case "$1" in
     update
     ;;
   *)
-    test "$INSTALL" = "y" && update && exit
     man git-extras
     ;;
 esac

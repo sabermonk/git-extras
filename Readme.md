@@ -13,7 +13,7 @@ $ make install
 One-liner:
 
 ```bash
-$ curl https://raw.github.com/visionmedia/git-extras/master/bin/git-extras | INSTALL=y sh
+$ (cd /tmp && git clone --depth 1 https://github.com/tj/git-extras.git && cd git-extras && sudo make install)
 ```
 
 [MacPorts](http://www.macports.org/)
@@ -22,7 +22,7 @@ $ curl https://raw.github.com/visionmedia/git-extras/master/bin/git-extras | INS
 $ sudo port install git-extras
 ```
 
-[Brew](github.com/mxcl/homebrew/) (buggy):
+[Brew](http://brew.sh/):
 
 ```bash
 $ brew install git-extras
@@ -31,7 +31,7 @@ $ brew install git-extras
 ## Screencasts
 
   Just getting started? Check out these screencasts:
-  
+
  - [introduction](https://vimeo.com/45506445) -- covering git-ignore, git-setup, git-changelog, git-release, git-effort and more
 
 ## Commands
@@ -47,11 +47,13 @@ $ brew install git-extras
  - `git delete-branch`
  - `git delete-submodule`
  - `git delete-tag`
+ - `git delete-merged-branches`
  - `git fresh-branch`
  - `git graft`
  - `git alias`
  - `git ignore`
  - `git info`
+ - `git fork`
  - `git release`
  - `git contrib`
  - `git repl`
@@ -63,10 +65,17 @@ $ brew install git-extras
  - `git feature`
  - `git refactor`
  - `git bug`
- - `git promote`
  - `git local-commits`
+ - `git archive-file`
+ - `git missing`
+ - `git lock`
+ - `git locked`
+ - `git unlock`
+ - `git reset-file`
+ - `git pr`
+ - `git root`
 
-## extras
+## git-extras
 
 The main `git-extras` command.
 
@@ -89,7 +98,7 @@ $ git extras update
 ```
 
 
-## gh-pages
+## git-gh-pages
 
 Sets up the `gh-pages` branch.  (See [GitHub Pages](http://pages.github.com/) documentation.)
 
@@ -161,11 +170,48 @@ authors  :
 	1	Guillermo Rauch         0.6%
 ```
 
-This command can also take a *commitish*, and will print a summary for commits in 
+This command can also take a *commitish*, and will print a summary for commits in
 the commmitish range:
 
 ```bash
 $ git summary v42..
+```
+
+This command can also take an options `--line`, will print a summary by lines
+
+```bash
+$ git summary --line
+
+project  : git-extras
+ lines    : 8420
+ authors  :
+ 2905 Tj Holowaychuk            34.5%
+ 1901 Jonhnny Weslley           22.6%
+ 1474 nickl-                    17.5%
+  653 Leila Muhtasib            7.8%
+  275 Tony                      3.3%
+  267 Jesús Espino             3.2%
+  199 Philipp Klose             2.4%
+  180 Michael Komitee           2.1%
+  178 Tom Vincent               2.1%
+  119 TJ Holowaychuk            1.4%
+  114 Damian Krzeminski         1.4%
+   66 Kenneth Reitz             0.8%
+   22 Not Committed Yet         0.3%
+   17 David Baumgold            0.2%
+   12 Brian J Brennan           0.1%
+    6 Leandro López            0.1%
+    6 Jan Krueger               0.1%
+    6 Gunnlaugur Thor Briem     0.1%
+    3 Hogan Long                0.0%
+    3 Curtis McEnroe            0.0%
+    3 Alex McHale               0.0%
+    3 Aggelos Orfanakos         0.0%
+    2 Phally                    0.0%
+    2 NANRI                     0.0%
+    2 Moritz Grauel             0.0%
+    1 Jean Jordaan              0.0%
+    1 Daniel Schildt            0.0%
 ```
 
 ## git-effort [file ....]
@@ -179,9 +225,15 @@ node (master): git effort --above 15 {src,lib}/*
   ![git effort](http://f.cl.ly/items/0b0w0S2K1d100e2T1a0D/Screen%20Shot%202012-02-08%20at%206.43.34%20PM.png)
 
   If you wish to ignore files with commits `<=` a value you may use `--above`:
-  
+
 ```
 $ git effort --above 5
+```
+
+  By default `git ls-files` is used, however you may pass one or more files to `git-effort(1)`, for example:
+
+```
+$ git effort bin/* lib/*
 ```
 
 ## git-repl
@@ -203,12 +255,6 @@ bin/git-ignore
 bin/git-release
 
 git> quit
-```
-
-  By default `git ls-files` is used, however you may pass one or more files to `git-effort(1)`, for example:
-
-```
-$ git effort bin/* lib/*
 ```
 
 ## git-commits-since [date]
@@ -265,6 +311,36 @@ Matt Colyer (1)
 total 1844
 ```
 
+## git-fork
+
+Fork the given github &lt;repo&gt;. Like clone but forks first.
+
+```Shell
+$ git fork https://github.com/LearnBoost/expect.js
+```
+
+or just:
+
+```Shell
+$ git fork LearnBoost/expect.js
+```
+
+Does the following:
+- forks the repo (prompts for github username and pass)
+- clones the repo into the current directory
+- adds the original repo as a remote so can track upstream changes
+- all remotes refs use git over ssh
+
+
+```Shell
+$ cd expect.js && git remote -v
+origin          git@github.com:<user>/expect.js (fetch)
+origin          git@github.com:<user>/expect.js (push)
+original        git@github.com:LearnBoost/expect.js (fetch)
+original        git@github.com:LearnBoost/expect.js (push)
+```
+
+
 ## git-release
 
 Release commit with the given &lt;tag&gt;:
@@ -274,7 +350,7 @@ $ git release 0.1.0
 ```
 
 Does the following:
-  
+
   - Executes _.git/hooks/pre-release.sh_ (if present)
   - Commits changes (to changelog etc) with message "Release &lt;tag&gt;"
   - Tags with the given &lt;tag&gt;
@@ -320,12 +396,6 @@ $ git ignore build "*.o" "*.log"
 ... added '*.log'
 ```
 
-Add patterns from an existing template:
-
-```bash
-$ git ignore -t rails
-```
-
 Without any patterns, `git-ignore` displays currently ignored patterns:
 
 ```bash
@@ -335,7 +405,7 @@ build
 *.log
 ```
 
-# git-info
+## git-info
 
 Show information about the repo:
 
@@ -385,6 +455,12 @@ $ git info
 
 ```
 
+If you wish to omit the config section, you may use `--no-config`:
+
+```bash
+$ git info --no-config
+```
+
 ## git-create-branch &lt;name&gt;
 
 Create local and remote branch `name`:
@@ -417,6 +493,18 @@ Delete local and remote tag `name`:
 $ git delete-tag 0.0.1
 ```
 
+## git-delete-merged-branches
+
+Deletes branches that are listed in `git branch --merged`.
+
+```bash
+$ git delete-merged-branches
+Deleted feature/themes (was c029ab3).
+Deleted feature/live_preview (was a81b002).
+Deleted feature/dashboard (was 923befa).
+...
+```
+
 ## git-fresh-branch &lt;name&gt;
 
 Create empty local branch `name`:
@@ -434,26 +522,33 @@ $ git graft new_feature dev
 $ git graft new_feature
 ```
 
-## git-squash &lt;src-branch&gt; [msg]
+## git-squash &lt;src-branch|commit ref&gt; [msg]
 
-Merge commits from `src-branch` into the current branch as a _single_ commit. When `[msg]` is given `git-commit(1)` will be invoked with that message. This is useful when small individual commits within a topic branch are irrelevant and you want to consider the topic as a single change.
+Merge commits from `src-branch` into the current branch as a _single_ commit.
+Also works if a commit reference from the current branch is provided.
+When `[msg]` is given `git-commit(1)` will be invoked with that message. This is
+useful when small individual commits within a topic branch are irrelevant and
+you want to consider the topic as a single change.
 
 ```bash
 $ git squash fixed-cursor-styling
 $ git squash fixed-cursor-styling "Fixed cursor styling"
+$ git squash 95b7c52
+$ git squash HEAD~3
+$ git squash HEAD~3 "Work on a feature"
 ```
 
 ## git-changelog
 
 Populate a file whose name matches `change|history -i_` with commits
-since the previous tag.  (If there are no tags, populates commits since the project began.) 
+since the previous tag.  (If there are no tags, populates commits since the project began.)
 
 Opens the changelog in `$EDITOR` when set.
 
 ```bash
-$ git changelog && cat History.md
+$ git changelog --tag 1.5.2 && cat History.md
 
-n.n.n / 2010-08-05
+1.5.2 / 2010-08-05
 ==================
 
 * Docs for git-ignore. Closes #3
@@ -518,3 +613,96 @@ git obliterate secrets.json
 ## git-local-commits
 
 List all commits on the local branch that have not yet been sent to origin. Any additional arguments will be passed directly to git log.
+
+## git-archive-file
+
+Creates an zip archive of the current git repository. The name of the archive will depend on the current HEAD of your git respository.
+
+## git-missing [branch1] branch2
+
+Print out which commits are on one branch or the other but not both.
+
+```bash
+$ git missing master
+< d14b8f0 only on current checked out branch
+> 97ef387 only on master
+```
+
+## git-rebase-patch patch-file
+
+Given a patch that doesn't apply to the current HEAD, find the latest commit
+it applies to and do a rebase. For example:
+
+```bash
+$ git rebase-patch test.patch
+Trying to find a commit the patch applies to...
+Patch applied to dbcf408dd26 as 7dc8b23ae1a
+First, rewinding head to replay your work on top of it...
+Applying: test.patch
+Using index info to reconstruct a base tree...
+Falling back to patching base and 3-way merge...
+Auto-merging README.txt
+```
+
+## git-lock filename
+
+Lock a local file `filename`:
+
+```bash
+$ git lock config/database.yml
+```
+
+## git-locked
+
+List local locked files:
+
+```bash
+$ git locked
+config/database.yml
+```
+
+## git-unlock filename
+
+Unlock a local file `filename`
+
+```bash
+$ git unlock config/database.yml
+```
+
+## git-reset-file filename [commit]
+
+Reset one file to `HEAD` or certain commit
+
+Reset one file to HEAD
+
+```bash
+$ git reset-file .htaccess
+```
+
+or reset one file to certain commit
+
+```bash
+$ git reset-file .htaccess dc82b19
+```
+
+## git-pr number
+
+Checks out a pull request from GitHub
+
+```bash
+$ git pr 226
+From https://github.com/tj/git-extras
+ * [new ref]       refs/pulls/226/head -> pr/226
+Switched to branch 'pr/226'
+```
+
+## git-root
+
+show the path to root directory of git repo
+
+```bash
+$ pwd
+.../very-deep-from-root-directory
+$ cd `git root`
+$ git add . && git commit
+```
